@@ -266,20 +266,21 @@ We also require a secret that stores the credentials to access the TPP api insta
 
 ### Create a secret with the access token retrieved from the previous step
 
-### Get access key from TPP
+Get access key from TPP
+
 NOTE:  Download vcert
-> vcert getcred --username <REPLACE WITH USER-NAME API CLIENT IS ASSIGNED> \
->               --password <REPLACE WITH PASSWORD API CLIENT IS ASSIGNED> \
->               -u https://<REPLACE WITH TPP INSTANCE URL>/vedsdk \
->               --client-id <REPLACE WITH API CLIENT ID> \
+> vcert getcred --username REPLACE WITH USER-NAME API CLIENT IS ASSIGNED \
+>               --password REPLACE WITH PASSWORD API CLIENT IS ASSIGNED \
+>               -u https://REPLACE WITH TPP INSTANCE URL/vedsdk \
+>               --client-id REPLACE WITH API CLIENT ID \
 >               --scope "certificate:manage,revoke" 
 
 
-### Copy the access_token
+Copy the access_token
 
 ![Access Token](./imgs/accesstoken.png)
 
-### Create a secret with the access token retrieved from the previous step
+Create a secret with the access token retrieved from the previous step
 
 > kubectl create secret generic tpp-auth-secret --namespace='tea' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
 
@@ -298,6 +299,8 @@ Check if the secrets are created
 Convert the tpp server bundle to base64
 
 > echo "$(<tppcabundle.pem)" | base64
+
+
 
 
 
