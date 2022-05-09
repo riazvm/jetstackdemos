@@ -1,0 +1,21 @@
+ apiVersion: networking.k8s.io/v1
+ kind: Ingress
+ metadata:
+   name: venafi-tpp-demo1-ingress-coffee
+   namespace: tea
+ spec:
+   tls:
+   - hosts:
+     - venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+     secretName: coffee-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+   rules:
+   - host: venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+     http:
+       paths:
+       - path: /tea
+         pathType: Prefix
+         backend:
+           service:
+              name: tea-svc
+              port: 
+                number: 80
