@@ -4,11 +4,13 @@
 Table of Contents
 =================
 
-[Introduction 3](#introduction)
+[Introduction](#introduction)
 
-[Kubernetes Ingress 3](#KubernetesIngress)
+[Kubernetes Ingress](#Kubernetes-Ingress)
 
-[Kubernetes Ingress 3](#Issuers)
+[Issuers](#Issuers)
+
+[Issuers](#Issuers)
 
 Introduction
 ============
@@ -114,8 +116,8 @@ Download the TPP server CA bundle. Copy it top a file tppcabundle.pem
  > kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 
 
-Securing an Ingress - Usecase 1
-===============================
+Usecase 1: Securing an Ingress
+================================
 In this use case we will use Venafi TPP to issue signed certificates. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to 
 the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Ingress resources to secure the applications utilizing certs generated from TPP.
 
