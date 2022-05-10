@@ -29,6 +29,7 @@ Usecase 1: Securing an Ingress
   * [Creating Certificate Resources](#Creating-Certificate-Resources)
   * [Enable Ingress TLS](#Enable-Ingress-TLS)
   * [Test TLS](#Test-TLS)
+- [Usecase 2: Securing Openshift Routes](#Usecase-2:-Securing-Openshift-Routes)
 
 Introduction
 ============
@@ -539,6 +540,24 @@ Point the browser to the host name of the app Eg. https://coffee.venafi-tpp.riaz
 ![coffee](./imgs/coffee.png)
 
 The apps are now secure.
+
+[Usecase 2: Securing Openshift Routes](#Usecase-2:-Securing-Openshift-Routes)
+
+Usecase 2: Securing Openshift Routes
+=====================================
+
+An OpenShift Container Platform route exposes a service at a host name, such as www.example.com, so that external clients can reach it by name. There are four kinds of
+routing within openshift. 
+Simple
+Edge
+Passthrough
+Re-encrypt
+
+Currently cert-manager supports creating an ingress withing Openshift which in turn creates a route of type Edge in openshift.
+
+![oc-routing](./imgs/oc-routing.png)
+
+
 
 
 
