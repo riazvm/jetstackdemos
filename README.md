@@ -10,7 +10,25 @@ Table of Contents
 
 [Issuers](#Issuers)
 
-[Issuers](#Issuers)
+[Configuring TPP](#Configuring-TPP)
+
+Cert Manager
+
+Usecase 1: Securing an Ingress
+
+
+- [Introduction](#introduction)
+- [Kubernetes Ingress](#Kubernetes-Ingress)
+- [Issuers](#Issuers)
+- [Configuring TPP](#Configuring-TPP)
+- [Cert Manager](#Cert-Manager)
+- [Usecase 1: Securing an Ingress](#Usecase-1:-Securing-an-Ingress)
+  * [Create Deployments and Expose Services](#Create-Deployments-and-Expose-Services)
+  * [Configure an Ingress](#Configure-an-Ingress)
+  * [Creating Namespace and Cluster scoped Issuers](#Creating-Namespace-and-Cluster-scoped-Issuers)
+  * [Creating Certificate Resources](#Creating-Certificate-Resources)
+  * [Enable Ingress TLS](#Enable-Ingress-TLS)
+  * [Test TLS](#Test-TLS)
 
 Introduction
 ============
@@ -108,7 +126,13 @@ Download the TPP server CA bundle. Copy it top a file tppcabundle.pem
 
 ![CA - Bundle](./imgs/ca-3.png)
 
-## Cert Manager
+# Cert Manager
+Cert-manager adds certificates and certificate issuers as resource types in Kubernetes clusters, and simplifies the process of obtaining, renewing and using those certificates.
+It can issue certificates from a variety of supported sources, including Let's Encrypt, HashiCorp Vault, and Venafi as well as private PKI.
+
+It will ensure certificates are valid and up to date, and attempt to renew certificates at a configured time before expiry.
+
+It is loosely based upon the work of kube-lego and has borrowed some wisdom from other similar projects such as kube-cert-manager.
 
 > kubectl get po -A
 
@@ -241,7 +265,7 @@ Access the application
 ![AppTea Unsecure](./imgs/teaunsecure.png)
 
 
-## Creating  Namespace and Cluster scoped Issuers
+## Creating Namespace and Cluster scoped Issuers
 
 As described earlier an Issuer can be either namespace or cluster scoped. 
 
@@ -351,7 +375,7 @@ Check cluster clusterissuer status
 ![clusterissuerstatus](./imgs/clusterissuerstatus.png)
 
 
-## Creating  Certificate Resources
+## Creating Certificate Resources
 
 
 A Certificate resource specifies fields that are used to generate certificate signing requests which are then fulfilled by the issuer type you have referenced.
