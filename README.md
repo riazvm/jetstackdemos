@@ -239,27 +239,9 @@ Access the application
 ![AppTea Unsecure](./imgs/teaunsecure.png)
 
 
-## Creating and Issuer
+## Creating  Namespace and Cluster scoped Issuers
 
 As described earlier an Issuer can be either namespace or cluster scoped. 
-
-### Namespace scoped Issuer
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: venafi-tpp-issuer
-  namespace: venafi-tpp
-spec:
-  venafi:
-    zone: "<REPLACE WITH PATH TO POLICY ZONE>" #"TLS/SSL\\Certificates\\Jetstack-short"
-    tpp:
-      url: <REPLACE WITH TPPURL/vedsdk> # Change this to the URL of your TPP instance
-      caBundle: <REPLACE WITH TPP BASE 64 ENCODED CA BUNDLE>
-      credentialsRef:
-        name: tpp-auth-secret # A Secret needs to be created with TPP credentials 
-```
 
 Creating an issuer requires a TPP instance in this case, the TPP CA bundle , A Policy zone withing tpp with permissions and a secret.
 We also require a secret that stores the credentials to access the TPP api instance to life manage certs.
@@ -284,13 +266,8 @@ Create a secret with the access token retrieved from the previous step
 
 > kubectl create secret generic tpp-auth-secret --namespace='tea' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
 
-Since the secret will be the same to access TPP let is create another secret to be used by the cluster issuer in the default namespace
 
-> kubectl create secret generic tpp-auth-secret-cluster --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
 
-Check if the secrets are created 
-
-> kubectl get secret -n default
 >
 > kubectl get secret -n coffee
 
@@ -300,14 +277,242 @@ Convert the tpp server bundle to base64
 
 > echo "$(<tppcabundle.pem)" | base64
 
+Create the namespace scoped issuer, replace all required values in the issuer yaml. 
+
+### Namespace scoped Issuer
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: venafi-tpp-issuer
+  namespace: venafi-tpp
+spec:
+  venafi:
+    zone: "<REPLACE WITH PATH TO POLICY ZONE>" #"TLS/SSL\\Certificates\\Jetstack-short"
+    tpp:
+      url: <REPLACE WITH TPPURL/vedsdk> # Change this to the URL of your TPP instance
+      caBundle: <REPLACE WITH TPP BASE 64 ENCODED CA BUNDLE>
+      credentialsRef:
+        name: <REPLACE WITH TPP SECRET> # A Secret needs to be created with TPP credentials 
+```
+
+Creating an issuer requires a TPP instance in this case, the TPP CA bundle , A Policy zone withing tpp with permissions and a secret.
+We also require a secret that stores the credentials to access the TPP api instance to life manage certs.
 
 
+> kubectl apply -f ./kubernetes/ingress/namespace-issuer.yaml
+
+Check issuer status
+
+> kubectl get issuer -A 
+
+![issuerstatus](./imgs/issuerstatus.png)
+
+### Cluster scoped Issuer
+
+NOTE: Create a secret with the access token retrieved from the previous step
+
+NOTE: The namespace for the cluster issuer is the cert-manager
+
+> kubectl create secret generic tpp-cluster-secret --namespace='cert-manager' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
+
+Check if the secrets are created 
+
+> kubectl get secret -n cert-manager
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: venafi-tpp-cluster-issuer
+spec:
+  venafi:
+    zone: "<REPLACE WITH PATH TO POLICY ZONE>" #"TLS/SSL\\Certificates\\Jetstack-short"
+    tpp:
+      url: <REPLACE WITH TPPURL/vedsdk> # Change this to the URL of your TPP instance
+      caBundle: <REPLACE WITH TPP BASE 64 ENCODED CA BUNDLE>
+      credentialsRef:
+        name: <REPLACE WITH TPP SECRET> # A Secret needs to be created with TPP credentials 
+```
+
+Creating an issuer requires a TPP instance in this case, the TPP CA bundle , A Policy zone withing tpp with permissions and a secret.
+We also require a secret that stores the credentials to access the TPP api instance to life manage certs.
+
+> kubectl apply -f ./kubernetes/ingress/cluster-issuer.yaml
 
 
+Check cluster clusterissuer status
+
+> kubectl get clusterissuer -A 
+
+![clusterissuerstatus](./imgs/clusterissuerstatus.png)
 
 
+## Creating  Certificate Resources
 
 
+A Certificate resource specifies fields that are used to generate certificate signing requests which are then fulfilled by the issuer type you have referenced.
+
+### Cert for namespaced issuer
+Let us create a certificate in the coffee namespace with the namespace scoped issuer we created in precious steps
+
+```yaml
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: venafi-tpp.REPLACE_DOMAIN_NAME
+  namespace: coffee
+spec:
+  secretName: venafi-tpp.REPLACE_DOMAIN_NAME
+  renewBefore: 360h # 15d
+  dnsNames:
+    - venafi-tpp.REPLACE_DOMAIN_NAME
+  commonName: venafi-tpp.REPLACE_DOMAIN_NAME
+  issuerRef:
+    name: venafi-tpp-issuer
+    kind: Issuer
+```
+
+REPLACE values as required
+
+> kubectl apply -f ./kubernetes/ingress/certificate.yaml
+
+Check status of the certificate and certificate resource
+
+> kubectl get certificate -n coffee
+>
+> kubectl get cr -n coffee
+
+![cert status](./imgs/namespacecertstatus.png)
+
+### Cert for cluster issuer
+
+Let us create a certificate in the tea namespace with cluster scoped issuer we created in precious steps
+
+```yaml
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  namespace: tea
+spec:
+  secretName: tea-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  # At least one of a DNS Name, URI, or IP address is required.
+  dnsNames:
+    - venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  #uris:
+  #  - spiffe://cluster.local/ns/sandbox/sa/example
+  #ipAddresses:
+  #  - 192.168.0.5
+  commonName: venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  privateKey: 
+    rotationPolicy: Always
+  #duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  #subject:
+    #organizations:
+      #- jetstack
+  # The use of the common name field has been deprecated since 2000 and is
+  # discouraged from being used. Use these if any policies are enforced on cert creation with TPP
+  #commonName: example.com
+  #isCA: false
+  #privateKey:
+    #algorithm: RSA
+    #encoding: PKCS1
+    #size: 2048
+  #usages:
+    #- server auth
+    #- client auth
+  issuerRef:
+    name: cluster-venafi-tpp-issuer
+    kind: ClusterIssuer
+    # This is optional since cert-manager will default to this value however
+    # if you are using an external issuer, change this to that issuer group.
+    # group: cert-manager.io
+```
+
+REPLACE values as required
+
+> kubectl apply -f ./kubernetes/ingress/cluster-certificate.yaml
+
+Check status of the certificate and certificate resource
+
+> kubectl get certificate -n tea
+>
+> kubectl get cr -n tea
+
+![cert status](./imgs/clusterissuerstatus.png)
+
+
+## Check if certificate is issued in TPP
+
+Login to TPP and check if certificates have been provisioned
+
+![cert status](./imgs/tppcerts.png)
+
+## Enable Ingress TLS
+
+Let us enable tls for both the tea and coffee applications
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: venafi-tpp-demo1-ingress-tea
+  namespace: tea
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+    secretName: tea-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  rules:
+  - host: tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+    http:
+      paths:
+      - path: /tea
+        pathType: Prefix
+        backend:
+          service:
+            name: tea-svc
+            port: 
+              number: 80
+```
+
+
+> kubectl apply -f ./kubernetes/ingress/ingress-tls-coffee.yaml
+
+> kubectl apply -f ./kubernetes/ingress/ingress-tls-tea.yaml
+
+![ingress status](./imgs/ingstatus.png)
+
+Note: We are now exposing port 443 as well
+
+## Test TLS
+
+Let us now look at how our ingresses look like
+
+> kubectl get ing -A
+
+![ingress status](./imgs/ingstatus.png)
+
+
+Update DNS record to point the host to the ipaddress
+
+Point the browser to the host name of the app Eg. https://tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net/tea
+
+![tea](./imgs/tea.png)
+
+Point the browser to the host name of the app Eg. https://coffee.venafi-tpp.riaz-mohamed-gcp.jetstacker.net/coffee
+
+![coffee](./imgs/coffee.png)
+
+The apps are now secure.
 
 
 

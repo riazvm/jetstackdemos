@@ -2,20 +2,23 @@
  kind: Ingress
  metadata:
    name: venafi-tpp-demo1-ingress-coffee
-   namespace: tea
+   namespace: coffee
+   annotations:
+     nginx.ingress.kubernetes.io/rewrite-target: /$1
  spec:
+   ingressClassName: nginx
    tls:
    - hosts:
-     - venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+     - coffee.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
      secretName: coffee-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
    rules:
-   - host: venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+   - host: coffee.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
      http:
        paths:
-       - path: /tea
+       - path: /coffee
          pathType: Prefix
          backend:
            service:
-              name: tea-svc
+              name: coffee-svc
               port: 
                 number: 80
