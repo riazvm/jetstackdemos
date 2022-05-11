@@ -8,7 +8,7 @@
  spec:
    ingressClassName: nginx
    rules:
-   - host: tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+   - host: tea.venafi-tpp.REPLACE_DOMAIN_NAME
      http:
        paths:
        - path: /tea

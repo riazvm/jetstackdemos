@@ -9,10 +9,10 @@ spec:
   ingressClassName: nginx
   tls:
   - hosts:
-    - tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
-    secretName: tea-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+    - tea.venafi-tpp.REPLACE_DOMAIN_NAME
+    secretName: tea-venafi-tpp.REPLACE_DOMAIN_NAME
   rules:
-  - host: tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  - host: tea.venafi-tpp.REPLACE_DOMAIN_NAME
     http:
       paths:
       - path: /tea

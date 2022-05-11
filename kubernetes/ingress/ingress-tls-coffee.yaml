@@ -9,10 +9,10 @@
    ingressClassName: nginx
    tls:
    - hosts:
-     - coffee.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
-     secretName: coffee-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+     - coffee.venafi-tpp.REPLACE_DOMAIN_NAME
+     secretName: coffee-venafi-tpp.REPLACE_DOMAIN_NAME
    rules:
-   - host: coffee.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+   - host: coffee.venafi-tpp.REPLACE_DOMAIN_NAME
      http:
        paths:
        - path: /coffee
