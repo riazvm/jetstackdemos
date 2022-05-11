@@ -1,0 +1,24 @@
+ apiVersion: networking.k8s.io/v1
+ kind: Ingress
+ metadata:
+   name: venafi-tpp-demo1-ingress-coffee
+   namespace: coffee
+   annotations:
+     nginx.ingress.kubernetes.io/rewrite-target: /$1
+ spec:
+   ingressClassName: nginx
+   tls:
+   - hosts:
+     - coffee.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+     secretName: coffee-oc-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+   rules:
+   - host: coffee.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+     http:
+       paths:
+       - path: /coffee
+         pathType: Prefix
+         backend:
+           service:
+              name: coffee-svc
+              port: 
+                number: 80

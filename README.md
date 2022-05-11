@@ -140,6 +140,8 @@ It is loosely based upon the work of kube-lego and has borrowed some wisdom from
 ### Deploy Certmanager to the target cluster
  > kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 
+ NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.80
+
 
 Usecase 1: Securing an Ingress
 ================================
@@ -291,7 +293,7 @@ Copy the access_token
 
 Create a secret with the access token retrieved from the previous step
 
-> kubectl create secret generic tpp-auth-secret --namespace='tea' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
+> kubectl create secret generic tpp-auth-secret --namespace='coffee' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
 
 
 
@@ -545,6 +547,8 @@ The apps are now secure.
 
 Usecase 2: Securing Openshift Routes
 =====================================
+In this use case we will use Venafi TPP to issue signed certificates. We will be openshift as the kubernetes platform. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Ingress resources to secure the applications utilizing certs generated from TPP.
+
 
 An OpenShift Container Platform route exposes a service at a host name, such as www.example.com, so that external clients can reach it by name. There are four kinds of
 routing within openshift. 
@@ -556,6 +560,74 @@ Re-encrypt
 Currently cert-manager supports creating an ingress withing Openshift which in turn creates a route of type Edge in openshift.
 
 ![oc-routing](./imgs/oc-routing.png)
+
+
+Pre Reqs: Deploy Cert manager
+
+> kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+
+ NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.80
+
+ ![oc-ns](./imgs/oc-ns.png)
+
+
+ [Create Deployments and Expose Services](#Create-Deployments-and-Expose-Services)
+
+ > oc apply -f ./openshift/routes/deployment.yaml
+
+  ![oc-deployment](./imgs/oc-deployment.png)
+
+ [Configure an Ingress](#Configure-an-Ingress)
+
+ > oc apply -f ./openshift/routes/
+
+ Chek if the route and the ingress is created
+
+ > oc get routes -n tea
+ >
+ > oc get ingress -n tea
+
+ Login to the open shift console and check the route and the route definition
+
+ ![oc-ns](./imgs/oc-routes.png)
+
+ ![oc-ns](./imgs/oc-console-route.png)
+ 
+ Update DNS in this case my oc dns is localhost or 127.0.0.0 pointing to tea.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+ 
+ Point the browser to the http://tea.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net/tea and check
+
+ ![oc-ns](./imgs/oc-tea-ingress.png)
+
+ [Creating Namespace and Cluster scoped Issuers](#Creating-Namespace-and-Cluster-scoped-Issuers)
+ 
+## Create Secrets to authenticate against TPP
+
+Create a secret with the access token to connect to tpp for oth cluster scoped and namespace scoped issuers
+
+### Namespaced scoped issuer
+
+> oc create secret generic tpp-auth-secret --namespace='coffee' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
+>
+> oc get secret -n coffee
+
+### Cluster scoped issuer
+
+> oc create secret generic tpp-cluster-secret --namespace='cert-manager' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
+>
+> oc get secret -n cert-manager
+
+![oc-tpp-secrets](./imgs/oc-tpp-secret.png)
+
+## Create the namespace scoped issuer
+
+    
+ [Creating Certificate Resources](#Creating-Certificate-Resources)
+ [Enable Ingress TLS](#Enable-Ingress-TLS)
+ [Test TLS](#Test-TLS)
+
+
+
 
 
 
