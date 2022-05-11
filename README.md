@@ -517,32 +517,33 @@ Login to TPP and check if certificates have been provisioned
 Let us enable tls for both the tea and coffee applications
 
 ```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: venafi-tpp-demo1-ingress-tea
-  namespace: tea
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-spec:
-  ingressClassName: nginx
-  tls:
-  - hosts:
-    - tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
-    secretName: tea-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
-  rules:
-  - host: tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
-    http:
-      paths:
-      - path: /tea
-        pathType: Prefix
-        backend:
-          service:
-            name: tea-svc
-            port: 
-              number: 80
+ apiVersion: networking.k8s.io/v1
+ kind: Ingress
+ metadata:
+   name: venafi-tpp-demo1-ingress-coffee
+   namespace: coffee
+   annotations:
+     nginx.ingress.kubernetes.io/rewrite-target: /$1
+ spec:
+   ingressClassName: nginx
+   tls:
+   - hosts:
+     - coffee.venafi-tpp.REPLACE_DOMAIN_NAME
+     secretName: coffee-venafi-tpp.REPLACE_DOMAIN_NAME
+   rules:
+   - host: coffee.venafi-tpp.REPLACE_DOMAIN_NAME
+     http:
+       paths:
+       - path: /coffee
+         pathType: Prefix
+         backend:
+           service:
+              name: coffee-svc
+              port: 
+                number: 80
 ```
 
+REPLACE values as required in the files .
 
 > kubectl apply -f ./kubernetes/ingress/ingress-tls-coffee.yaml
 
@@ -611,7 +612,7 @@ Pre Reqs: Deploy Cert manager
 
  > oc apply -f ./openshift/routes/
 
- Chek if the route and the ingress is created
+ Check if the route and the ingress is created
 
  > oc get routes -n tea
  >
@@ -650,12 +651,92 @@ Create a secret with the access token to connect to tpp for oth cluster scoped a
 ![oc-tpp-secrets](./imgs/oc-tpp-secret.png)
 
 ## Create the namespace scoped issuer
-Update the namespace-issuer.yaml under ./openshift/routes before running this command
-> 
-    
+
+REPLACE values as required in the files ( ./openshift/routes/namespace-issuer.yaml )
+
+>  oc apply -f ./openshift/routes/namespace-issuer.yaml 
+
+Check Status of the issuer
+
+> oc get issuer -n coffee
+
+![oc-name-issuer](./imgs/oc-name-issuer.png)
+
+## Create the cluster scoped issuer
+
+REPLACE values as required in the files ( ./openshift/routes/cluster-issuer.yaml  )
+
+>  oc apply -f ./openshift/routes/cluster-issuer.yaml 
+
+Check Status of the cluster-issuer
+
+> oc get clusterissuer -n coffee
+
+![oc-cluster-issuer](./imgs/oc-cluster-issuer.png)
+
  [Creating Certificate Resources](#Creating-Certificate-Resources)
- [Enable Ingress TLS](#Enable-Ingress-TLS)
+
+REPLACE values as required in the files ( ./openshift/routes/certificate.yaml & cluster-certificate.yaml)
+
+Created under the coffee namespace
+>  oc apply -f ./openshift/routes/certificate.yaml 
+
+Created under the tea namespace
+> oc apply -f ./openshift/routes/cluster-certificate.yaml
+
+Check the status of the Certificate and certificate resources
+
+> oc get certificate -n coffee
+> oc get certificate -n tea
+> oc get cr -n coffee
+> oc get cr -n tea
+
+Note the Certificate shows READY and the Certificate resource shows Approved as TRUE
+
+![oc-cluscert](./imgs/oc-cluscert.png)
+
+Check TPP for the certs that have been generated
+
+![oc-cluscert](./imgs/tpp-oc-cert.png)
+
+[Enable Ingress TLS](#Enable-Ingress-TLS)
+REPLACE values as required in the files ( ./openshift/routes/ingress-tls-tea.yaml &  ingress-tls-coffee.yaml)
+
+> oc apply -f ./openshift/routes/ingress-tls-tea.yaml
+> oc apply -f ./openshift/routes/ingress-tls-coffee.yaml
+
+Check if the ingress has been created and the ports 
+
+> oc get ingress -n tea
+> oc get ingress -n coffee
+
+![oc-ingress](./imgs/oc-ingress.png)
+
+Note that Address and the Ports
+
+Openshift would have created two routes of type Edge/Redirect
+
+> oc get route -n tea
+
+> oc get route -n coffee
+
+![oc-edge-route](./imgs/oc-edge-route.png)
+
  [Test TLS](#Test-TLS)
+
+ Update DNS records , and point the browser to the coffee and tea applciations
+
+ ![oc-cofee-tls-1](./imgs/oc-cofee-tls-1.png)
+
+ ![oc-cofee-tls-2](./imgs/oc-cofee-tls-2.png)
+
+
+![oc-tea-tls-1](./imgs/oc-tea-tls-1.png)
+
+ ![oc-tea-tls-2](./imgs/oc-tea-tls-2.png)
+ 
+
+
 
 
 

@@ -5,7 +5,7 @@
    namespace: tea
  spec:
    rules:
-   - host: tea.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+   - host: tea.oc.venafi-tpp.REPLACE_DOMAIN_NAME
      http:
        paths:
        - path: /tea

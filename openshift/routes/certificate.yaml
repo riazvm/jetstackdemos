@@ -1,18 +1,18 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: coffee.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  name: venafi-tpp.oc.REPLACE_DOMAIN_NAME
   namespace: coffee
 spec:
-  secretName: coffee-oc-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  secretName: coffee-oc-venafi-tpp.REPLACE_DOMAIN_NAME
   # At least one of a DNS Name, URI, or IP address is required.
   dnsNames:
-    - coffee.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+    - coffee.oc.venafi-tpp.REPLACE_DOMAIN_NAME
   #uris:
   #  - spiffe://cluster.local/ns/sandbox/sa/example
   #ipAddresses:
   #  - 192.168.0.5
-  commonName: coffee.oc.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  commonName: coffee.oc.venafi-tpp.REPLACE_DOMAIN_NAME
   privateKey: 
     rotationPolicy: Always
   #duration: 2160h # 90d
