@@ -1,18 +1,18 @@
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  name: tea.venafi-tpp.REPLACE_DOMAIN_NAME
   namespace: tea
 spec:
-  secretName: tea-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  secretName: tea-venafi-tpp.REPLACE_DOMAIN_NAME
   # At least one of a DNS Name, URI, or IP address is required.
   dnsNames:
-    - tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+    - tea.venafi-tpp.REPLACE_DOMAIN_NAME
   #uris:
   #  - spiffe://cluster.local/ns/sandbox/sa/example
   #ipAddresses:
   #  - 192.168.0.5
-  commonName: tea.venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  commonName: tea.venafi-tpp.REPLACE_DOMAIN_NAME
   privateKey: 
     rotationPolicy: Always
   #duration: 2160h # 90d

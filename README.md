@@ -329,6 +329,7 @@ spec:
 Creating an issuer requires a TPP instance in this case, the TPP CA bundle , A Policy zone withing tpp with permissions and a secret.
 We also require a secret that stores the credentials to access the TPP api instance to life manage certs.
 
+NOTE: Update the namespace-issuer.yaml under ./kubernetes/ingress before running this command
 
 > kubectl apply -f ./kubernetes/ingress/namespace-issuer.yaml
 
@@ -343,6 +344,8 @@ Check issuer status
 NOTE: Create a secret with the access token retrieved from the previous step
 
 NOTE: The namespace for the cluster issuer is the cert-manager
+
+
 
 > kubectl create secret generic tpp-cluster-secret --namespace='cert-manager' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
 
@@ -367,6 +370,8 @@ spec:
 
 Creating an issuer requires a TPP instance in this case, the TPP CA bundle , A Policy zone withing tpp with permissions and a secret.
 We also require a secret that stores the credentials to access the TPP api instance to life manage certs.
+
+NOTE: Update the cluster-issuer.yaml under ./kubernetes/ingress before running this command
 
 > kubectl apply -f ./kubernetes/ingress/cluster-issuer.yaml
 
@@ -394,17 +399,42 @@ metadata:
   name: venafi-tpp.REPLACE_DOMAIN_NAME
   namespace: coffee
 spec:
-  secretName: venafi-tpp.REPLACE_DOMAIN_NAME
-  renewBefore: 360h # 15d
+  secretName: coffee-venafi-tpp.REPLACE_DOMAIN_NAME
+  # At least one of a DNS Name, URI, or IP address is required.
   dnsNames:
-    - venafi-tpp.REPLACE_DOMAIN_NAME
-  commonName: venafi-tpp.REPLACE_DOMAIN_NAME
+    - coffee.venafi-tpp.REPLACE_DOMAIN_NAME
+  #uris:
+  #  - spiffe://cluster.local/ns/sandbox/sa/example
+  #ipAddresses:
+  #  - 192.168.0.5
+  commonName: coffee.venafi-tpp.REPLACE_DOMAIN_NAME
+  privateKey: 
+    rotationPolicy: Always
+  #duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  #subject:
+    #organizations:
+      #- jetstack
+  # The use of the common name field has been deprecated since 2000 and is
+  # discouraged from being used. Use these if any policies are enforced on cert creation with TPP
+  #commonName: example.com
+  #isCA: false
+  #privateKey:
+    #algorithm: RSA
+    #encoding: PKCS1
+    #size: 2048
+  #usages:
+    #- server auth
+    #- client auth
   issuerRef:
     name: venafi-tpp-issuer
     kind: Issuer
+    # This is optional since cert-manager will default to this value however
+    # if you are using an external issuer, change this to that issuer group.
+    # group: cert-manager.io
 ```
 
-REPLACE values as required
+REPLACE values as required in ./kubernetes/ingress/certificate.yaml 
 
 > kubectl apply -f ./kubernetes/ingress/certificate.yaml
 
@@ -425,18 +455,18 @@ Let us create a certificate in the tea namespace with cluster scoped issuer we c
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
-  name: venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  name: tea.venafi-tpp.REPLACE_DOMAIN_NAME
   namespace: tea
 spec:
-  secretName: tea-venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  secretName: tea-venafi-tpp.REPLACE_DOMAIN_NAME
   # At least one of a DNS Name, URI, or IP address is required.
   dnsNames:
-    - venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+    - tea.venafi-tpp.REPLACE_DOMAIN_NAME
   #uris:
   #  - spiffe://cluster.local/ns/sandbox/sa/example
   #ipAddresses:
   #  - 192.168.0.5
-  commonName: venafi-tpp.riaz-mohamed-gcp.jetstacker.net
+  commonName: tea.venafi-tpp.REPLACE_DOMAIN_NAME
   privateKey: 
     rotationPolicy: Always
   #duration: 2160h # 90d
@@ -463,7 +493,7 @@ spec:
     # group: cert-manager.io
 ```
 
-REPLACE values as required
+REPLACE values as required in ./kubernetes/ingress/cluster-certificate.yaml 
 
 > kubectl apply -f ./kubernetes/ingress/cluster-certificate.yaml
 
@@ -620,7 +650,8 @@ Create a secret with the access token to connect to tpp for oth cluster scoped a
 ![oc-tpp-secrets](./imgs/oc-tpp-secret.png)
 
 ## Create the namespace scoped issuer
-
+Update the namespace-issuer.yaml under ./openshift/routes before running this command
+> 
     
  [Creating Certificate Resources](#Creating-Certificate-Resources)
  [Enable Ingress TLS](#Enable-Ingress-TLS)
