@@ -19,7 +19,7 @@ metadata:
   name: tea
   namespace: tea
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: tea
@@ -58,7 +58,7 @@ metadata:
   name: coffee
   namespace: coffee
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: coffee

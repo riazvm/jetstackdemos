@@ -1,0 +1,23 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: venafi-tpp-route-ingress-tea
+  namespace: tea
+spec:
+  host: tea.oc.venafi-tpp.REPLACE_DOMAIN_NAME
+  path: "/tea" 
+  to:
+    kind: Service
+    name: tea-svc
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: venafi-tpp-route-ingress-coffee
+  namespace: coffee
+spec:
+  host: coffee.oc.venafi-tpp.REPLACE_DOMAIN_NAME
+  path: "/cofee" 
+  to:
+    kind: Service
+    name: coffee-svc

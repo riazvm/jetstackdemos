@@ -29,7 +29,28 @@ Usecase 1: Securing an Ingress
   * [Creating Certificate Resources](#Creating-Certificate-Resources)
   * [Enable Ingress TLS](#Enable-Ingress-TLS)
   * [Test TLS](#Test-TLS)
-- [Usecase 2: Securing Openshift Routes](#Usecase-2:-Securing-Openshift-Routes)
+- [Usecase 2: Securing Openshift Routes Using an Ingress Resource](#Usecase-2:-Securing-Openshift-Routes-with-Ingress)
+  * [Create Deployments and Expose Services](#Create-Deployments-and-Expose-Services)
+  * [Configure an Ingress](#Configure-an-Ingress)
+  * [Creating Namespace and Cluster scoped Issuers](#Creating-Namespace-and-Cluster-scoped-Issuers)
+  * [Creating Certificate Resources](#Creating-Certificate-Resources)
+  * [Enable Ingress TLS](#Enable-Ingress-TLS)
+  * [Test TLS](#Test-TLS)
+- [Usecase 3: Securing Openshift Routes using Routes](#Usecase-3:-Securing-Openshift-Routes-using-Routes)
+  * [Configure Routes](#Configure-Routes)
+  * [Deploy Jetstack Openshift Route project](#jetstack-openshift-Routes-project)
+  * TO DO
+- [Usecase 4: Generating Java Keystore and Securing a Java Application Using Cert-Manager](#Usecase-4:-Generating-Java-Keystore-and-Securing-a-Java-Application-Using-Cert-Manager)
+  * [Issuer and Certs](#Issuer-and-Certs)
+  * [Deploy Spring Boot Application](Deploy-Spring-Boot-Application)
+  * [Test TLS](Test-TLS)
+- [Usecase 5: Securing Applications using the CSI driver](#Usecase-5:-Securing-Applications-using-the-CSI-driver)
+  * [Issuer and Certs](#Issuer-and-Certs)
+  * [Priviledged permissions for OCP](#Priviledged-permissions-for-OCP)
+  * [Deploy csi driver](#Deploy-csi-driver)
+  * [Deploy Application and mount certs using the csi driver](#Deploy-Application-and-mount-certs-using-the-csi-driver)
+  * [Test](#Test)
+  
 
 Introduction
 ============
@@ -138,9 +159,19 @@ It is loosely based upon the work of kube-lego and has borrowed some wisdom from
 > kubectl get po -A
 
 ### Deploy Certmanager to the target cluster
- > kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+ > kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.2/cert-manager.yaml
 
- NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.80
+Deployment using helm
+ > helm repo add jetstack https://charts.jetstack.io
+ > helm repo update
+ > helm upgrade -i \
+ > cert-manager jetstack/cert-manager \
+ > --namespace cert-manager \
+ > --create-namespace \
+ > --version v1.8.2 \
+ > --set installCRDs=true
+
+ NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.8.2
 
 
 Usecase 1: Securing an Ingress
@@ -574,10 +605,10 @@ Point the browser to the host name of the app Eg. https://coffee.venafi-tpp.riaz
 
 The apps are now secure.
 
-[Usecase 2: Securing Openshift Routes](#Usecase-2:-Securing-Openshift-Routes)
+[Usecase 2: Securing Openshift Routes Using an Ingress Resource](#Usecase-2:-Securing-Openshift-Routes-with-Ingress)
 
-Usecase 2: Securing Openshift Routes
-=====================================
+Usecase 2: Securing Openshift Routes using Ingress
+===================================================
 In this use case we will use Venafi TPP to issue signed certificates. We will be openshift as the kubernetes platform. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Ingress resources to secure the applications utilizing certs generated from TPP.
 
 
@@ -588,7 +619,7 @@ Edge
 Passthrough
 Re-encrypt
 
-Currently cert-manager supports creating an ingress withing Openshift which in turn creates a route of type Edge in openshift.
+
 
 ![oc-routing](./imgs/oc-routing.png)
 
@@ -597,20 +628,36 @@ Pre Reqs: Deploy Cert manager
 
 > kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
 
- NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.80
+Deployment using helm
+
+```bash
+  helm repo add jetstack https://charts.jetstack.io
+  helm repo update
+  helm upgrade -i \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.8.2 \
+  --set installCRDs=true
+
+ ```
+
+ NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.8.2
 
  ![oc-ns](./imgs/oc-ns.png)
 
 
  [Create Deployments and Expose Services](#Create-Deployments-and-Expose-Services)
 
- > oc apply -f ./openshift/routes/deployment.yaml
+ > oc apply -f ./openshift/deployment.yaml
+
 
   ![oc-deployment](./imgs/oc-deployment.png)
 
+
  [Configure an Ingress](#Configure-an-Ingress)
 
- > oc apply -f ./openshift/routes/
+ > oc apply -f ./openshift/ingress/ingress.yaml
 
  Check if the route and the ingress is created
 
@@ -652,9 +699,9 @@ Create a secret with the access token to connect to tpp for oth cluster scoped a
 
 ## Create the namespace scoped issuer
 
-REPLACE values as required in the files ( ./openshift/routes/namespace-issuer.yaml )
+REPLACE values as required in the files ( ./openshift/namespace-issuer.yaml )
 
->  oc apply -f ./openshift/routes/namespace-issuer.yaml 
+>  oc apply -f ./openshift/namespace-issuer.yaml 
 
 Check Status of the issuer
 
@@ -664,9 +711,9 @@ Check Status of the issuer
 
 ## Create the cluster scoped issuer
 
-REPLACE values as required in the files ( ./openshift/routes/cluster-issuer.yaml  )
+REPLACE values as required in the files ( ./openshift/cluster-issuer.yaml  )
 
->  oc apply -f ./openshift/routes/cluster-issuer.yaml 
+>  oc apply -f ./openshift/cluster-issuer.yaml 
 
 Check Status of the cluster-issuer
 
@@ -676,13 +723,13 @@ Check Status of the cluster-issuer
 
  [Creating Certificate Resources](#Creating-Certificate-Resources)
 
-REPLACE values as required in the files ( ./openshift/routes/certificate.yaml & cluster-certificate.yaml)
+REPLACE values as required in the files ( ./openshift/certificate.yaml & cluster-certificate.yaml)
 
 Created under the coffee namespace
->  oc apply -f ./openshift/routes/certificate.yaml 
+>  oc apply -f ./openshift/certificate.yaml 
 
 Created under the tea namespace
-> oc apply -f ./openshift/routes/cluster-certificate.yaml
+> oc apply -f ./openshift/cluster-certificate.yaml
 
 Check the status of the Certificate and certificate resources
 
@@ -702,8 +749,8 @@ Check TPP for the certs that have been generated
 [Enable Ingress TLS](#Enable-Ingress-TLS)
 REPLACE values as required in the files ( ./openshift/routes/ingress-tls-tea.yaml &  ingress-tls-coffee.yaml)
 
-> oc apply -f ./openshift/routes/ingress-tls-tea.yaml
-> oc apply -f ./openshift/routes/ingress-tls-coffee.yaml
+> oc apply -f ./openshift/ingress/ingress-tls-tea.yaml
+> oc apply -f ./openshift/ingress/ingress-tls-coffee.yaml
 
 Check if the ingress has been created and the ports 
 
@@ -734,8 +781,200 @@ Openshift would have created two routes of type Edge/Redirect
 ![oc-tea-tls-1](./imgs/oc-tea-tls-1.png)
 
  ![oc-tea-tls-2](./imgs/oc-tea-tls-2.png)
- 
 
+[Usecase 3: Securing Openshift Routes using Routes](#Usecase-3:-Securing-Openshift-Routes-using-Routes)
+
+Usecase 3: Securing Openshift Routes using Routes
+=================================================
+ 
+<<TO DO>>
+
+ [Configure Routes](#Configure-Routes)
+
+ > oc apply -f ./openshift/routes/routes-coffee-tea.yaml
+
+Check if the routes have been created and check application by accessing via a browser
+
+ ![oc-ns](./imgs/routes.png)
+
+ ![oc-ns](./imgs/access-coffee.png)
+
+
+[Deploy Jetstack Openshift Route project](#jetstack-openshift-Routes-project)
+
+oc apply -f https://github.com/cert-manager/openshift-routes/releases/latest/download/cert-manager-openshift-routes.yaml -n cert-manager
+
+<<TO DO>>
+
+Usecase 4: Generating Java Keystore and Securing a Java Application Using Cert-Manager
+=======================================================================================
+[Issuer and Certs](#Issuer-and-Certs)
+### Issuer and Certs
+
+Create a namespace for tenancy
+
+```bash
+kubectl create ns truststores
+
+```
+
+Create a self signed issuer, create ca cert from the issuer and create a issuer from the CA cert 
+
+```bash
+kubectl apply -f ./truststores/cert-manager/issuer.yaml 
+```
+Create a password for the jks keystore
+
+```bash
+kubectl create secret generic jks-password-secret --from-literal=password-key=changeit -n truststores
+```
+
+Create a certificate from the ca-issuer for the app . NOTE: under usages -server auth This will create the keystore to be used by the java app
+
+```bash
+kubectl apply -f ./truststores/cert-manager/server-cert.yaml 
+```
+Check status of certificate
+
+```bash
+kubectl get certificate -n truststores
+```
+
+Check the secret created by the certificate resource (Should contain the truststore, keystore, tls.crt, tls.key, ca.crt)
+
+```bash
+kubectl describe secret my-app-trustore-secret -n truststores
+```
+
+[Deploy Spring Boot Application](Deploy-Spring-Boot-Application)
+### Deploy Spring Boot Application
+
+We have created a simple spring boot application with a GET API that would return "Hello Stranger" along with a counter. We will go through the steps to secure this app with TLS using the javakeystore generated by cert-manager. The application.properties file in the spring boot project specified the properties to secure the application. 
+https://github.com/riazvm/truststore-springboot
+
+
+```yaml
+server.ssl.key-store: /opt/secret/keystore.jks
+server.ssl.key-store-password: ${PASSWORD}
+
+server.ssl.trust-store: /opt/secret/truststore.jks
+server.ssl.trust-store-password: ${PASSWORD}
+server.ssl.client-auth: NEED
+```
+Review the ./truststores/cert-manager/spring-boot-app.yaml deployment file to see the corresponsing mappings.
+
+Deploy the application
+
+```bash
+kubectl apply -f ./truststores/cert-manager/spring-boot-app.yaml 
+```
+
+The deployment creates a service of type load-balancer. Get the load balancer IP 
+
+
+[Test TLS](Test-TLS)
+### Test TLS
+To test TLS we will require a client cert and key. For testing purposes we will generate the cert and key from the same issuer. Note   usages: - client auth in the yaml
+
+```bash
+kubectl apply -f ./truststores/cert-manager/client-cert.yaml 
+```
+
+Test app using curl
+
+```bash
+curl https://<load-balancer-ip>/trust
+```
+This will result in an error. 
+
+Get the client crts and keys
+
+```bash
+kubectl get secret my-app-trustore-secret-client -n truststores  -o json | jq -r '.data."tls.crt"'| base64 -d > tls.crt
+kubectl get secret my-app-trustore-secret-client -n truststores  -o json | jq -r '.data."tls.key"'| base64 -d > tls.key
+kubectl get secret my-app-trustore-secret-client -n truststores  -o json | jq -r '.data."ca.crt"'| base64 -d > ca.crt
+
+```
+Test the app. Update DNS to point to myapp in this example.
+
+```bash
+curl https://<Load balancer IP>/trust --cert tls.crt --key tls.key --cacert ca.crt -k
+
+```
+[Usecase 5: Securing Applications using the CSI driver](#Usecase-5:-Securing-Applications-using-the-CSI-driver)
+Usecase 5: Securing Applications using the CSI driver
+======================================================
+
+Pre Reqs: Cert-manager should be installed
+Note: JKS and pkcs12 are currently not supported by the CSI driver and will be available in a near future release
+
+
+[Issuer and Certs](#Issuer-and-Certs)
+### Issuer and Certs
+
+Create a namespace for tenancy
+
+```bash
+kubectl create ns truststores
+
+```
+
+Create a self signed issuer, create ca cert from the issuer and create a issuer from the CA cert 
+
+```bash
+kubectl apply -f ./truststores/cert-manager/issuer.yaml 
+```
+[Priviledged permissions for OCP](#Priviledged-permissions-for-OCP)
+### Priviledged permissions for OCP
+
+> oc adm policy add-scc-to-user privileged system:serviceaccount:cert-manager:cert-manager-csi-driver
+
+Service account for redis server deployment 
+
+> oc adm policy add-scc-to-user privileged system:serviceaccount:truststores:redis-server-sa
+
+Service account for redis client deployment
+
+> oc adm policy add-scc-to-user privileged system:serviceaccount:truststores:redis-client-sa
+
+[Deploy csi driver](#Deploy-csi-driver)
+### Deploy csi driver
+
+```bash
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm upgrade \
+  --install cert-manager-csi-driver jetstack/cert-manager-csi-driver \
+  --namespace cert-manager \
+  --version v0.3.0
+```
+
+[Deploy Application and mount certs using the csi driver](#Deploy-Application-and-mount-certs-using-the-csi-driver)
+## Deploy Application and mount certs using the csi driver
+
+Deploy the redis server and client
+
+```bash
+kubectl apply -f ./truststores/csi-driver/redis-server.yaml
+kubectl apply -f ./truststores/csi-driver/redis-client.yaml
+```
+
+Note: The csi section under volumes is where the csi configuration resides
+
+[Test](#Test)
+## Test
+Test if client works with cert 
+```bash
+kubectl exec -it -n truststores "$(kubectl get pod -n truststores -l app=redis-client-app -o jsonpath='{.items[0].metadata.name}')" -- redis-cli -h redis-master01 -p 6379 --tls --cacert /redis-client-ssl/certs/ca.crt --cert /redis-client-ssl/certs/tls.crt --key /redis-client-ssl/certs/tls.key ping
+```
+
+You should see "PONG" as response.. 
+
+Inspect the cert 
+
+```bash
+kubectl exec -it -n truststores "$(kubectl get pod -n truststores -l app=redis-client-app -o jsonpath='{.items[0].metadata.name}')" -- sh -c 'cat /redis-client-ssl/certs/tls.crt'   | openssl x509 -text -noout | HEAD
+```
 
 
 

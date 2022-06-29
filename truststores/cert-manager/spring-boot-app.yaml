@@ -1,0 +1,57 @@
+---         
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: truststoredemo
+  namespace: truststores
+spec:
+  selector:
+    matchLabels:
+      app: truststoredemo
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: truststoredemo
+    spec:
+      containers:
+      - name: truststoredemo
+        image: "riazvm/jetstackdemos-truststore:1.1"
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+          - name: PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password-key
+                name: jks-password-secret
+        volumeMounts:
+          - mountPath: /opt/secret
+            name: truststore-certs
+      volumes:
+        - name: truststore-certs
+          secret:
+            secretName: my-app-trustore-secret       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: truststoredemo-svc     # Unique name of the resource
+  namespace: truststores
+  labels:
+    app: truststoredemo
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: 8443
+      protocol: TCP
+      name: https
+  selector:
+    app: truststoredemo
+  sessionAffinity: None
+  type: LoadBalancer

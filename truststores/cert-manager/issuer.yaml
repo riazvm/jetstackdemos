@@ -1,0 +1,38 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: self-signed-issuer
+  namespace: truststores
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: trust-store-ca
+  namespace: truststores
+spec:
+  secretName: trust-store-ca
+  duration: 2880h
+  renewBefore: 360h
+  commonName: java-app
+  isCA: true
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  usages:
+    - digital signature
+    - key encipherment
+  issuerRef:
+    name: self-signed-issuer
+    kind: Issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: truststores
+spec:
+  ca:
+    secretName: trust-store-ca
