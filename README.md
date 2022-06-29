@@ -902,6 +902,7 @@ curl https://<Load balancer IP>/trust --cert tls.crt --key tls.key --cacert ca.c
 
 ```
 [Usecase 5: Securing Applications using the CSI driver](#Usecase-5:-Securing-Applications-using-the-CSI-driver)
+
 Usecase 5: Securing Applications using the CSI driver
 ======================================================
 
