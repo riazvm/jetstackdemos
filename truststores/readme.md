@@ -88,14 +88,6 @@ We have created a simple spring boot application with a GET API that would retur
 https://github.com/riazvm/truststore-springboot
 
 
-```yaml
-server.ssl.key-store: /opt/secret/keystore.jks
-server.ssl.key-store-password: ${PASSWORD}
-
-server.ssl.trust-store: /opt/secret/truststore.jks
-server.ssl.trust-store-password: ${PASSWORD}
-server.ssl.client-auth: NEED
-```
 Review the cert-manager/spring-boot-app.yaml deployment file to see the corresponsing mappings.
 
 Deploy the application
@@ -178,9 +170,6 @@ helm upgrade \
   --namespace cert-manager \
   --version v0.3.0
 ```
-
-
-
 
 ## Deploy Application and mount certs using the csi driver
 

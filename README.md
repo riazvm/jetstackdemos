@@ -840,7 +840,7 @@ Check status of certificate
 kubectl get certificate -n truststores
 ```
 
-Check the secret created by the certificate resource (Should contain the truststore, keystore, tls.crt, tls.key, ca.crt)
+Check the secret created by the certificate resource (Should contain the truststore.jks, truststore.12, keystore.jks, keystore.p12, tls.crt, tls.key, ca.crt )
 
 ```bash
 kubectl describe secret my-app-trustore-secret -n truststores
@@ -853,14 +853,6 @@ We have created a simple spring boot application with a GET API that would retur
 https://github.com/riazvm/truststore-springboot
 
 
-```yaml
-server.ssl.key-store: /opt/secret/keystore.jks
-server.ssl.key-store-password: ${PASSWORD}
-
-server.ssl.trust-store: /opt/secret/truststore.jks
-server.ssl.trust-store-password: ${PASSWORD}
-server.ssl.client-auth: NEED
-```
 Review the ./truststores/cert-manager/spring-boot-app.yaml deployment file to see the corresponsing mappings.
 
 Deploy the application

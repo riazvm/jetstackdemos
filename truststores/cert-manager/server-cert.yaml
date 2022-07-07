@@ -24,6 +24,11 @@ spec:
       passwordSecretRef:
         key: password-key
         name: jks-password-secret
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        key: password-key
+        name: jks-password-secret
   issuerRef:
     name: ca-issuer
     kind: Issuer
