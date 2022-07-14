@@ -787,8 +787,8 @@ Openshift would have created two routes of type Edge/Redirect
 
 [Usecase 3: Securing Openshift Routes using Routes](#Usecase-3:-Securing-Openshift-Routes-using-Routes)
 
-Usecase 3: Securing Openshift Routes using Routes
-=================================================
+Usecase 3: Securing Openshift Routes using Routes Definitions
+==============================================================
 
 
 In this use case we will use Venafi TPP to issue signed certificates. We will be using openshift as the kubernetes platform. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Route resources to secure the applications utilizing certs generated from TPP.
@@ -835,7 +835,7 @@ Check if the routes have been created and check application by accessing via a b
 
 [Deploy Jetstack Openshift Route project](#jetstack-openshift-Routes-project)
 
-oc apply -f https://github.com/cert-manager/openshift-routes/releases/latest/download/cert-manager-openshift-routes.yaml -n cert-manager
+> oc apply -f https://github.com/cert-manager/openshift-routes/releases/latest/download/cert-manager-openshift-routes.yaml -n cert-manager
 
  ![oc-openshift-route](./imgs/oc-cert-routes.png)
 
@@ -857,7 +857,6 @@ Create a secret with the access token to connect to tpp for oth cluster scoped a
 >
 > oc get secret -n cert-manager
 
-![oc-tpp-secrets](./imgs/oc-tpp-secret.png)
 
 ## Create the namespace scoped issuer
 
@@ -886,11 +885,15 @@ Check Status of the cluster-issuer
 
 [Creating Secure Routes](#Creating-Secure-Routes)
 
+## Create the Secure Routes
+
 >  oc apply -f ./openshift/routes/routes-coffee-tea-tls.yaml
 
 Note: The annotations in the route definitions. Change as required. The annotations on the routes are used by cert manager to populate the route spec.
 
 [Test Secure Routes](#Test-Secure-Routes)
+
+## Test Secure Routes
 
 Login to the openshift console and check the defintion of the route, the certificate will be populate in the route defintion.
 
