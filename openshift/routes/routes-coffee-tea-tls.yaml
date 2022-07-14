@@ -1,0 +1,41 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: venafi-tpp-route-ingress-tea
+  namespace: tea
+  annotations:
+    cert-manager.io/issuer-name: venafi-tpp-cluster-issuer # This is the only required annotation
+    cert-manager.io/issuer-kind: ClusterIssuer # Optional, defaults to Issuer, could be ClusterIssuer or an External Issuer
+    cert-manager.io/renew-before: 30m # Optional, defaults to 1/3 of total certificate duration.
+    cert-manager.io/common-name: "tea.oc.venafi-tpp.REPLACE_DOMAIN_NAME" # Optional, no default.
+    cert-manager.io/alt-names: "tea.oc.venafi-tpp.REPLACE_DOMAIN_NAME" # Optional, no default
+    #cert-manager.io/ip-sans: "10.20.30.40,192.168.192.168" # Optional, no default
+    #cert-manager.io/uri-sans: "spiffe://trustdomain/workload" # Optional, no default
+spec:
+  host: tea.oc.venafi-tpp.REPLACE_DOMAIN_NAM
+  path: "/tea" 
+  to:
+    kind: Service
+    name: tea-svc
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: venafi-tpp-route-ingress-coffee
+  namespace: coffee
+  annotations:
+    cert-manager.io/issuer-name: venafi-tpp-issuer # This is the only required annotation
+    #cert-manager.io/issuer-group: cert-manager.io # Optional, defaults to cert-manager.io
+    cert-manager.io/issuer-kind: Issuer # Optional, defaults to Issuer, could be ClusterIssuer or an External Issuer
+    #cert-manager.io/duration: 1h # Optional, defaults to 90 days
+    cert-manager.io/renew-before: 30m # Optional, defaults to 1/3 of total certificate duration.
+    cert-manager.io/common-name: "coffee.oc.venafi-tpp.REPLACE_DOMAIN_NAM" # Optional, no default.
+    cert-manager.io/alt-names: "coffee.oc.venafi-tpp.REPLACE_DOMAIN_NAM" # Optional, no default
+    #cert-manager.io/ip-sans: "10.20.30.40,192.168.192.168" # Optional, no default
+    #cert-manager.io/uri-sans: "spiffe://trustdomain/workload" # Optional, no default
+spec:
+  host: coffee.oc.venafi-tpp.REPLACE_DOMAIN_NAM
+  path: "/coffee" 
+  to:
+    kind: Service
+    name: coffee-svc

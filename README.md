@@ -39,7 +39,10 @@ Usecase 1: Securing an Ingress
 - [Usecase 3: Securing Openshift Routes using Routes](#Usecase-3:-Securing-Openshift-Routes-using-Routes)
   * [Configure Routes](#Configure-Routes)
   * [Deploy Jetstack Openshift Route project](#jetstack-openshift-Routes-project)
-  * TO DO
+  * [Deploy Jetstack Openshift Route project](#jetstack-openshift-Routes-project)
+  * [Creating Namespace and Cluster scoped Issuers](#Creating-Namespace-and-Cluster-scoped-Issuers)
+  * [Creating Secure Routes](#Creating-Secure-Routes)
+  * [Test Secure Routes](#Test-Secure-Routes)
 - [Usecase 4: Generating Java Keystore and Securing a Java Application Using Cert-Manager](#Usecase-4:-Generating-Java-Keystore-and-Securing-a-Java-Application-Using-Cert-Manager)
   * [Issuer and Certs](#Issuer-and-Certs)
   * [Deploy Spring Boot Application](Deploy-Spring-Boot-Application)
@@ -609,7 +612,7 @@ The apps are now secure.
 
 Usecase 2: Securing Openshift Routes using Ingress
 ===================================================
-In this use case we will use Venafi TPP to issue signed certificates. We will be openshift as the kubernetes platform. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Ingress resources to secure the applications utilizing certs generated from TPP.
+In this use case we will use Venafi TPP to issue signed certificates. We will be using openshift as the kubernetes platform. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Ingress resources to secure the applications utilizing certs generated from TPP.
 
 
 An OpenShift Container Platform route exposes a service at a host name, such as www.example.com, so that external clients can reach it by name. There are four kinds of
@@ -786,8 +789,39 @@ Openshift would have created two routes of type Edge/Redirect
 
 Usecase 3: Securing Openshift Routes using Routes
 =================================================
- 
-<<TO DO>>
+
+
+In this use case we will use Venafi TPP to issue signed certificates. We will be using openshift as the kubernetes platform. We will also be creating both namesapace scoped issuers as well as cluster scoped issuers that connect to the TPP server to provision the certificates. We will then deploy a sample application , create certificates resources referenceing the issuers. We will also be creating Route resources to secure the applications utilizing certs generated from TPP.
+
+Pre Reqs: Deploy Cert manager
+
+> kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+
+Deployment using helm
+
+```bash
+  helm repo add jetstack https://charts.jetstack.io
+  helm repo update
+  helm upgrade -i \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.8.2 \
+  --set installCRDs=true
+
+ ```
+
+ NOTE: Deploy the latest version as per docs : https://cert-manager.io/docs/installation/ . The current version as per authoring this guide is v1.8.2
+
+ ![oc-ns](./imgs/oc-ns.png)
+
+
+ [Create Deployments and Expose Services](#Create-Deployments-and-Expose-Services)
+
+ > oc apply -f ./openshift/deployment.yaml
+
+
+  ![oc-deployment](./imgs/oc-deployment.png)
 
  [Configure Routes](#Configure-Routes)
 
@@ -799,12 +833,75 @@ Check if the routes have been created and check application by accessing via a b
 
  ![oc-ns](./imgs/access-coffee.png)
 
-
 [Deploy Jetstack Openshift Route project](#jetstack-openshift-Routes-project)
 
 oc apply -f https://github.com/cert-manager/openshift-routes/releases/latest/download/cert-manager-openshift-routes.yaml -n cert-manager
 
-<<TO DO>>
+ ![oc-openshift-route](./imgs/oc-cert-routes.png)
+
+ [Creating Namespace and Cluster scoped Issuers](#Creating-Namespace-and-Cluster-scoped-Issuers)
+ 
+## Create Secrets to authenticate against TPP
+
+Create a secret with the access token to connect to tpp for oth cluster scoped and namespace scoped issuers
+
+### Namespaced scoped issuer
+
+> oc create secret generic tpp-auth-secret --namespace='coffee' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
+>
+> oc get secret -n coffee
+
+### Cluster scoped issuer
+
+> oc create secret generic tpp-cluster-secret --namespace='cert-manager' --from-literal=access-token='<REPLACE WITH ACCESS TOKEN>'
+>
+> oc get secret -n cert-manager
+
+![oc-tpp-secrets](./imgs/oc-tpp-secret.png)
+
+## Create the namespace scoped issuer
+
+REPLACE values as required in the files ( ./openshift/namespace-issuer.yaml )
+
+>  oc apply -f ./openshift/namespace-issuer.yaml 
+
+Check Status of the issuer
+
+> oc get issuer -n coffee
+
+![oc-name-issuer](./imgs/oc-name-issuer.png)
+
+## Create the cluster scoped issuer
+
+REPLACE values as required in the files ( ./openshift/cluster-issuer.yaml  )
+
+>  oc apply -f ./openshift/cluster-issuer.yaml 
+
+Check Status of the cluster-issuer
+
+> oc get clusterissuer -n coffee
+
+![oc-cluster-issuer](./imgs/oc-cluster-issuer.png)
+
+
+[Creating Secure Routes](#Creating-Secure-Routes)
+
+>  oc apply -f ./openshift/routes/routes-coffee-tea-tls.yaml
+
+Note: The annotations in the route definitions. Change as required. The annotations on the routes are used by cert manager to populate the route spec.
+
+[Test Secure Routes](#Test-Secure-Routes)
+
+Login to the openshift console and check the defintion of the route, the certificate will be populate in the route defintion.
+
+![oc-route-def](./imgs/oc-route-def.png)
+
+
+Check from the browser if the route is secure.
+
+![oc-tlsroute-coffee](./imgs/oc-tlsroute-coffee.png)
+
+
 
 Usecase 4: Generating Java Keystore and Securing a Java Application Using Cert-Manager
 =======================================================================================
